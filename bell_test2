@@ -12,7 +12,7 @@ all.equal(lambertW(z), lamW::lambertW0(1.0)) ## TRUE
 
 
 # Load the functions from the C++ file
-sourceCpp("bell_fun2.cpp")
+sourceCpp("bell_functions.cpp")
 
 ## copied from the web (https://www.statisticshowto.com/bells-numbers-bell-triangle/)
 bell_nums <- c(1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975)
