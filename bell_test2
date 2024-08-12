@@ -1,1 +1,68 @@
+# Load Rcpp package
+library(Rcpp)
+library(lamW)      ## for lambert W
+library(VGAMdata)  ## for dbell()
+library(multicool) ## for Bell()
+library(glmmTMB)
+
+
+z <- 1.0
+all.equal(lambertW(z), lamW::lambertW0(1.0)) ## TRUE
+
+
+
+# Load the functions from the C++ file
+sourceCpp("bell_fun2.cpp")
+
+## copied from the web (https://www.statisticshowto.com/bells-numbers-bell-triangle/)
+bell_nums <- c(1, 1, 2, 5, 15, 52, 203, 877, 4140, 21147, 115975)
+## Test the bell function against these and existing implementation
+as.integer(sapply(1:8, Bell))  ## uh-oh
+multicool::Bell(1:8)
+
+## Test the dbell() function against the VGAMdata version
+d1 <- VGAMdata::dbell(0:15, shape = 1.5)
+d2 <- dbell(0:15, shape = 1.5)
+all.equal(d1[1:3], d2[1:3])
+## things start to go wrong at x = 4
+d1[4]
+d2[4]
+
+rbell_samples <- rbell(100, 1.5)  # Generate 100 random samples from Bell distribution with shape = 1.5
+
+quantiles <- qbell(c(0.1, 0.5, 0.9), 1.5)  # Compute quantiles for p = 0.1, 0.5, 0.9 with theta = 1.5
+print(quantiles)
+##
+
+# Install and load the necessary packages
+# install.packages("bellreg")  # Install bellreg if not installed
+# install.packages("VGAMdata") # VGAMdata contains the bell function
+library(bellreg)
+library(VGAMdata)
+library(Rcpp)
+data(faults)
+
+fit <- bellreg(nf ~ lroll, data = faults)
+
+
+
+#  Prepare the data for C++ function
+object <- list(
+  y = faults$nf,    # Dependent variable
+  mu = fitted(fit)       # Fitted values from the model
+)
+
+# Step 4: Compute quantile residuals using the custom C++ function
+cpp_resid <- qresiduals(object)
+
+
+plot(cpp_resid, main = "C++ Implementation Residuals", ylab = "Residuals", xlab = "Index")
+cpp_vmu(fitted(fit))
+
+x <- c(1, 2, 3, 4, 5)  # Example data
+theta <- 1.5  # Example theta
+
+# Calculate the log-likelihood
+log_likelihood <- log_likelihood_bell(x, theta)
+print(log_likelihood)
 
