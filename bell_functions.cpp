@@ -32,6 +32,26 @@ Rcpp::NumericVector Bell(Rcpp::IntegerVector n) {
   return result;
 }
 
+
+// [[Rcpp::export]]
+Rcpp::NumericVector Bell2(Rcpp::IntegerVector nn) {
+  int n = (int)nn[0];
+  if ((n == 0) || (n == 1)) {
+    return(Rcpp::NumericVector::create(1));
+  }
+  Rcpp::NumericVector B(n);
+  Rcpp::NumericVector Bneu(n);
+  B[0] = 1;
+  for (int i=0; i<(n-1); i++) {
+    Bneu[0] = B[i];
+    for (int j=1; j<=(i+1); j++) {
+      Bneu[j] = B[j - 1] + Bneu[j - 1];
+    }
+    for (int k=0; k<n; k++) B[k] = Bneu[k];
+  }
+  return(Rcpp::NumericVector::create(Bneu[n-1]));
+}
+
 // C++ version of the dbell function
 // [[Rcpp::export]]
 Rcpp::NumericVector dbell(Rcpp::NumericVector x, double shape = 1, bool log_prob = false) {

@@ -84,30 +84,38 @@ b1 <- sapply(1:20, numbers::bell)
 b2 <- multicool::Bell(1:20)
 b3 <- Bell(1:20)
 
-test <- expand.grid(n = 2:26,
-                    f = c("numbers", "multicool", "ours"))
+
+## need microbenchmark instead of rbenchmark because our second version is too fast ...
 testfun <- function(n) {
-    rbenchmark::benchmark(
+    ## rbenchmark::benchmark(
+    microbenchmark::microbenchmark(
         numbers = numbers::bell(n),
         multicool = multicool::Bell(n),
         ours = Bell(n),
-        replications = 50)
+        ours2 = Bell2(n),
+        ## replications = 50
+        times = 50
+        ) |> summary()
 }
 single_fun <- function(n) {
     data.frame(numbers = numbers::bell(n),
                multicool = multicool::Bell(n),
-               ours = Bell(n)
+               ours2 = Bell2(n)
                )
 }
 
 ss <- function(n) setNames(n, n)
-bb <- purrr::map_dfr(ss(10:27), testfun, .id = "n")
-
-vv <- purrr::map_dfr(ss(10:27), single_fun, .id = "n")
+bb <- purrr::map_dfr(ss(10:25), testfun, .id = "n")
+vv <- purrr::map_dfr(ss(10:30), single_fun, .id = "n")
 
 save("bb", "vv", file = "bell_bench.rda")           
 library(ggplot2); theme_set(theme_bw())
-ggplot(bb, aes(as.numeric(n), elapsed, colour = test)) + geom_point() + geom_smooth() +
+ggplot(bb, aes(as.numeric(n),
+               ##elapsed,
+               median,
+               colour = expr
+               ## test
+               )) + geom_point() + geom_smooth() +
     scale_x_log10() + scale_y_log10()
 
 
