@@ -70,14 +70,35 @@ devtools::load_all("~/R/pkgs/glmmTMB/glmmTMB")
 remotes::install_github("glmmTMB/glmmTMB/glmmTMB", ref = "bell")
 library(glmmTMB)
 dd <- data.frame(x = 1:5)
-fit1 <- glmmTMB(x ~ 1, data = dd, family = list(family = "bell", link = "log"))
+fit1 <- glmmTMB(x ~ 1, data = dd, family = list(family = "bell", link = "lambertW"))
 ## mean value
 c0 <- fixef(fit1)$cond[1]
 exp(c0)*exp(exp(c0))  ## 3
+predict(fit1)
+predict(fit1, type = "response")
 
 set.seed(101)
 dd <- data.frame(x = bellreg::rbell(100, theta = 2))
-glmmTMB(x ~ 1, data = dd, family = list(family = "bell", link = "log"), verbose = TRUE)
+fit2 <- glmmTMB(x ~ 1, data = dd, family = list(family = "bell", link = "log"), verbose = TRUE)
+predict(fit2, type = "response")
+mean(dd$x)
+
+fit3 <- glmmTMB(x ~ 1, data = dd, family = glmmTMB:::bell(), verbose = TRUE)
+
+
+sim <- simulate_new( ~ 1, newdata = data.frame(x=rep(1,1000)),
+                   seed  = 102,
+                   newparams = list(beta=0.5),
+                   family = bell())[[1]]
+mean(bellreg::rbell(1000, theta = exp(0.5)))
+library(bellreg)
+bellreg::bellreg(x~1, data = dd)
+mean(sim)
+dd <- data.frame(x=sim)
+fit4 <- glmmTMB(x ~ 1, data = dd, family = glmmTMB:::bell())
+confint(fit4)
+table(predict(fit4, type = "response"))
+mean(dd$x)
 
 Rcpp::sourceCpp("bell_functions.cpp")
 b1 <- sapply(1:20, numbers::bell)
